@@ -11,15 +11,16 @@ const generateResponse = async (prompt) => {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://web-ai-3-84cy.onrender.com", // आपकी लाइव साइट का लिंक
-        "X-Title": "Web.Ai" // आपकी वेबसाइट का नाम
+        "HTTP-Referer": "https://web-ai-3-84cy.onrender.com",
+        "X-Title": "Web.Ai"
       },
       body: JSON.stringify({
-        "model": "deepseek/deepseek-chat",
+        // "google/gemini-2.0-flash-lite-preview-02-05:free" बहुत स्टेबल है
+        "model": "google/gemini-2.0-flash-lite-preview-02-05:free", 
         "messages": [
           {
             "role": "system",
-            "content": "You are an expert web development server. Return ONLY raw HTML code matching the user criteria. Do not talk, do not write markdown, do not wrap in backticks. Start with <!DOCTYPE html>."
+            "content": "You are an expert web developer. Return ONLY raw HTML. No markdown, no backticks."
           },
           {
             "role": "user",
@@ -31,18 +32,19 @@ const generateResponse = async (prompt) => {
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      // यह हिस्सा आपको बताएगा कि असली समस्या क्या है
-      const errorData = await response.json().catch(() => ({}));
-      console.error("OpenRouter Full Error:", JSON.stringify(errorData));
-      throw new Error(`OpenRouter Error: ${response.status} - ${JSON.stringify(errorData)}`);
+      // अगर एरर आता है, तो इसे कंसोल में साफ देखें
+      console.error("OpenRouter API Failed:", data);
+      throw new Error(data.error?.message || "OpenRouter Request Failed");
     }
 
-    const data = await response.json();
     return data.choices[0].message.content.trim();
 
   } catch (error) {
-    console.error("GENERATE_RESPONSE_CRITICAL_ERROR:", error.message);
+    console.error("GENERATE_RESPONSE_ERROR:", error.message);
+    // यहाँ से एरर वापस भेजें ताकि फ्रंटएंड को पता चले
     throw error;
   }
 };
