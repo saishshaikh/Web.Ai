@@ -11,7 +11,7 @@ import LiveSite from "./pages/LiveSite";
 import Pricing from "./pages/Pricing";
 
 // Dynamically use production server when deployed, fallback to localhost
-export const serverUrl = import.meta.env?.VITE_SERVER_URL || "https://web-ai-3-84cy.onrender.com";
+export const serverUrl = import.meta.env?.VITE_SERVER_URL || "https://web-ai-1-4u9c.onrender.com";
 
 function App() {
   // Trigger background token checking & populate Redux store
