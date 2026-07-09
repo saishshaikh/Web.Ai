@@ -71,15 +71,15 @@ const websiteSchema = new mongoose.Schema(
 );
 
 // ✅ प्री-सेव हुक - स्लग जेनरेट करें
-websiteSchema.pre('save', function(next) {
-  // अगर slug नहीं है तो जनरेट करें
+websiteSchema.pre("save", function () {
   if (!this.slug && this.title) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "")
-      .slice(0, 50) + this._id.toString().slice(-5);
+    this.slug =
+      this.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 50) +
+      this._id.toString().slice(-5);
   }
-  next();
 });
 
 // ✅ मॉडल को एक्सपोर्ट करें
