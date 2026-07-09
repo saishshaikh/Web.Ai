@@ -405,7 +405,7 @@ export const deploy = async (req, res) => {
 
    const website = await Website.findOne({
     _id: id,
-    userId: req.user.id
+    user: req.user._id
 });
 
     if (!website) {
