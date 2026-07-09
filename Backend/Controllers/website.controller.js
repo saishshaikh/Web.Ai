@@ -1,7 +1,7 @@
-console.log("✅ LOADED WEBSITE CONTROLLER");
+
 import User from "../models/User.js";
 import Website from "../models/website.model.js";
-import generateResponse from "../Config/openrouter.js";
+import generateResponse from "../config/openrouter.js";  // ✅ 'config' lowercase
 import { generateSlug } from "../utils/generateSlug.js";
 import mongoose from "mongoose";
 
