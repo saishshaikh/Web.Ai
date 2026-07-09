@@ -1,16 +1,15 @@
-AI WEBSITES BUILDER
+<p align="center">
+  <b>An AI-Powered Web Development Platform Built with MERN Stack & LLM Technology</b>
+</p>
 
-# WebGenAI 🚀
+# WebGenAI 🚀🤖
 
 An AI-powered website generation platform built by **Saish Shaikh** using **MERN Stack and Large Language Models (LLMs)**. WebGenAI helps users create modern, responsive websites with the power of Generative AI.
 
 Generate smarter. Build faster. Create with AI. 🤖🌐 
 
-# WebGenAI 🚀🤖
 
-<p align="center">
-  <b>An AI-Powered Web Development Platform Built with MERN Stack & LLM Technology</b>
-</p>
+
 
 ## 🌐 Overview
 
