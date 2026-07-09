@@ -1,4 +1,3 @@
-
 import User from "../models/User.js";
 import Website from "../models/website.model.js";
 import generateResponse from "../Config/openrouter.js";  // ✅ 'config' lowercase
@@ -6,21 +5,148 @@ import { generateSlug } from "../utils/generateSlug.js";
 import mongoose from "mongoose";
 
 const masterPrompt = `
-YOU ARE A PRINCIPAL FRONTEND ARCHITECT AND SENIOR UI/UX ENGINEER.
-BUILD A HIGH-END, ULTRA-MODERN PORTFOLIO WEBSITE USING HTML, TAILWIND CSS AND JAVASCRIPT BASED ON THE USER REQUIREMENT.
+YOU ARE A PRINCIPAL FRONTEND ARCHITECT, SENIOR UI/UX ENGINEER, AND EXPERT JAVASCRIPT DEVELOPER.
+
+BUILD A PREMIUM, ULTRA-MODERN, FULLY CLICKABLE AND FULLY FUNCTIONAL WEBSITE USING:
+
+- HTML5
+- TAILWIND CSS CDN
+- PURE VANILLA JAVASCRIPT
+
+BASED ON THE USER REQUIREMENT.
 
 --------------------------------------------------
 USER REQUIREMENT:
 {USER_PROMPT}
 --------------------------------------------------
 
-OUTPUT FORMAT RULES:
-1. Return ONLY the complete, production-ready, standalone HTML code.
-2. Include the Tailwind CSS CDN script in the <head>.
-3. Do NOT wrap the code inside markdown code blocks (DO NOT use \`\`\`html or \`\`\`).
-4. Start directly with <!DOCTYPE html> and end with </html>.
-5. No explanations, no conversation, no markdown. Just pure HTML code string.
-`;
+CORE RULE:
+
+CREATE A REAL WORKING WEBSITE, NOT JUST A STATIC DESIGN.
+
+EVERY INTERACTIVE ELEMENT MUST WORK.
+
+--------------------------------------------------
+FUNCTIONAL REQUIREMENTS:
+--------------------------------------------------
+
+1. ALL BUTTONS MUST BE CLICKABLE AND FUNCTIONAL:
+
+- Navigation buttons must scroll/open correct sections.
+- Mobile menu button must open and close menu.
+- CTA buttons must perform actions.
+- Buy buttons must work.
+- Add to Cart buttons must work.
+- Remove buttons must work.
+- Quantity +/- buttons must work.
+- Forms must submit successfully.
+- Search/filter buttons must work if included.
+
+--------------------------------------------------
+IF WEBSITE IS SHOP / RESTAURANT / ECOMMERCE:
+--------------------------------------------------
+
+Create a complete shopping experience:
+
+- Product cards with images, title, price, description.
+- Working Add To Cart.
+- Cart sidebar or cart section.
+- Increase quantity.
+- Decrease quantity.
+- Remove product.
+- Automatic subtotal calculation.
+- Automatic total calculation.
+- Billing/checkout form.
+- Customer name, phone, address fields.
+- Order confirmation message after checkout.
+- Clear cart after successful order.
+
+--------------------------------------------------
+IF WEBSITE HAS SERVICES:
+--------------------------------------------------
+
+Create:
+
+- Service cards.
+- Booking buttons.
+- Contact forms.
+- Working submission messages.
+
+--------------------------------------------------
+JAVASCRIPT REQUIREMENTS:
+--------------------------------------------------
+
+- Use only vanilla JavaScript.
+- No React.
+- No JSX.
+- No frameworks except Tailwind CDN.
+- No broken JavaScript.
+- No console errors.
+- All event listeners must work.
+- Use proper template literals.
+- Test all functions logically.
+
+--------------------------------------------------
+RESPONSIVE REQUIREMENTS:
+--------------------------------------------------
+
+Website must be fully responsive:
+
+- Mobile phones
+- Tablets
+- Desktop screens
+
+Include:
+
+- Responsive navbar.
+- Mobile hamburger menu.
+- Responsive cards.
+- Touch-friendly buttons.
+- Proper spacing.
+
+--------------------------------------------------
+IMAGE REQUIREMENTS:
+--------------------------------------------------
+
+- Never use source.unsplash.com.
+- Use working image URLs only.
+- Add fallback images where required.
+
+--------------------------------------------------
+CODE QUALITY:
+--------------------------------------------------
+
+- Production-ready HTML.
+- Valid HTML structure.
+- Clean CSS.
+- Clean JavaScript.
+- No placeholder broken features.
+- No unfinished sections.
+
+--------------------------------------------------
+OUTPUT RULES:
+--------------------------------------------------
+
+Return ONLY complete HTML code.
+
+No markdown.
+No explanation.
+
+Start with:
+<!DOCTYPE html>
+
+End with:
+</html>
+
+Include:
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+inside head.
+
+Put all JavaScript inside <script> before closing body.
+
+
 
 const cleanAiCode = (code) => {
   if (typeof code !== "string") return code;
@@ -274,53 +400,54 @@ export const getAll = async (req, res) => {
   }
 };
 
-// DEPLOY WEBSITE
 export const deploy = async (req, res) => {
   try {
     const { id } = req.params;
-    const website = await Website.findById(id);
-    if (!website) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Website not found" 
-      });
-    }
 
-    if (website.isDeployed || website.deployed) {
-      return res.status(400).json({ 
+   const website = await Website.findOne({
+    _id: id,
+    userId: req.user.id
+});
+
+    if (!website) {
+      return res.status(404).json({
         success: false,
-        message: "Website already deployed!",
-        url: website.deployUrl,
-        isDeployed: true
+        message: "Website not found"
       });
     }
 
     if (!website.slug) {
-      website.slug = website.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 60) + website._id.toString().slice(-5);
+      website.slug = website.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 60) + website._id.toString().slice(-5);
     }
-    
+
+    const frontendBase =
+      process.env.FRONTEND_URL || "http://localhost:5173";
+
+    console.log("FRONTEND_URL:", frontendBase);
+
+    website.deployUrl = `${frontendBase.replace(/\/$/, "")}/site/${website.slug}`;
     website.isDeployed = true;
     website.deployed = true;
-    
-    const frontendBase = process.env.FRONTEND_URL || "http://localhost:5173";
-    website.deployUrl = `${frontendBase.replace(/\/$/, "")}/site/${website.slug}`;
+
     await website.save();
 
-    return res.status(200).json({ 
+    return res.json({
       success: true,
-      message: "Deployed successfully!", 
       url: website.deployUrl,
-      isDeployed: true 
+      isDeployed: true
     });
-  } catch (error) {
-    console.error("❌ Deploy error:", error);
-    return res.status(500).json({ 
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
       success: false,
-      message: error.message 
+      message: err.message
     });
   }
 };
-
 // GET BY SLUG
 export const getBySlug = async (req, res) => {
   try {
