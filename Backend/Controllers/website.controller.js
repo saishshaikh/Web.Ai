@@ -46,21 +46,59 @@ const cleanAiCode = (code) => {
   return cleaned;
 };
 
-// 1. CREATE WEBSITE CONTROLLER
+// ✅ FIXED: CREATE WEBSITE CONTROLLER
 export const generateWebsite = async (req, res) => {
   try {
-    const { prompt } = req.body;
-    if (!prompt) return res.status(400).json({ message: "Prompt is required" });
-    if (!req.user?._id) return res.status(401).json({ message: "Unauthorized" });
+    console.log("📩 Request received at /api/website/generate");
+    console.log("📦 Request body:", JSON.stringify(req.body, null, 2));
+    console.log("👤 User:", req.user?._id || "No user found");
+
+    // ✅ Multiple field names support
+    const prompt = req.body.prompt || req.body.message || req.body.text || req.body.content || req.body.query;
+    
+    if (!prompt) {
+      return res.status(400).json({
+        success: false,
+        message: "Prompt is required. Please send 'prompt' field in request body.",
+        received: req.body,
+        expected: { prompt: "your website description" }
+      });
+    }
+
+    // ✅ Auth check
+    if (!req.user?._id) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Unauthorized - Please login first" 
+      });
+    }
 
     const initialUserCheck = await User.findById(req.user._id);
-    if (!initialUserCheck) return res.status(404).json({ message: "User not found" });
-    if (initialUserCheck.credits <= 0) return res.status(400).json({ message: "Insufficient credits" });
+    if (!initialUserCheck) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found in database" 
+      });
+    }
+    
+    if (initialUserCheck.credits <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Insufficient credits. Please add credits to continue." 
+      });
+    }
 
+    console.log("🤖 Calling AI with prompt:", prompt.substring(0, 100) + "...");
+    
     let rawCode = await generateResponse(masterPrompt.replace("{USER_PROMPT}", prompt));
     rawCode = cleanAiCode(rawCode);
 
-    if (!rawCode) return res.status(500).json({ message: "AI did not return valid website code" });
+    if (!rawCode) {
+      return res.status(500).json({ 
+        success: false,
+        message: "AI did not return valid website code" 
+      });
+    }
 
     let slug = generateSlug(prompt);
     const session = await mongoose.startSession();
@@ -70,16 +108,15 @@ export const generateWebsite = async (req, res) => {
       const user = await User.findById(req.user._id).session(session);
       const [website] = await Website.create([{
         user: user._id,
-        title: prompt,
+        title: prompt.substring(0, 100),
         latestCode: rawCode,
         slug,
-        // ✅ isDeployed फ्लैग डिफॉल्ट false
         isDeployed: false,
         deployed: false,
         deployUrl: null,
         conversation: [
           { role: "user", content: prompt },
-          { role: "ai", content: "Website generated using deepseek core template." },
+          { role: "ai", content: "Website generated successfully." },
         ],
       }], { session });
 
@@ -88,7 +125,10 @@ export const generateWebsite = async (req, res) => {
       await session.commitTransaction();
       session.endSession();
 
+      console.log("✅ Website generated successfully for user:", user._id);
+
       return res.status(200).json({
+        success: true,
         message: "Website generated successfully",
         websiteId: website._id,
         remainingCredits: user.credits,
@@ -97,22 +137,39 @@ export const generateWebsite = async (req, res) => {
     } catch (dbError) {
       await session.abortTransaction();
       session.endSession();
+      console.error("❌ Database error:", dbError);
       throw dbError;
     }
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    console.error("❌ Generate website error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: "Internal Server Error", 
+      error: error.message 
+    });
   }
 };
 
-// 2. UPDATE/EDIT WEBSITE CONTROLLER
+// ✅ FIXED: UPDATE WEBSITE CONTROLLER
 export const updateWebsite = async (req, res) => {
   try {
     const { id } = req.params;
-    const { prompt } = req.body; 
-    if (!prompt) return res.status(400).json({ message: "Prompt is required" });
+    const prompt = req.body.prompt || req.body.message || req.body.text || req.body.content;
+    
+    if (!prompt) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Prompt is required" 
+      });
+    }
 
     const website = await Website.findById(id);
-    if (!website) return res.status(404).json({ message: "Website not found" });
+    if (!website) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Website not found" 
+      });
+    }
 
     const updatePrompt = `
 YOU ARE A SENIOR UI/UX ENGINEER. YOUR TASK IS TO MODIFY THE EXISTING HTML CODE BASED ON THE USER'S NEW REQUEST.
@@ -132,7 +189,12 @@ OUTPUT FORMAT RULES:
     let updatedCode = await generateResponse(updatePrompt.replace("{USER_PROMPT}", prompt));
     updatedCode = cleanAiCode(updatedCode);
 
-    if (!updatedCode) return res.status(500).json({ message: "AI did not return valid code updates" });
+    if (!updatedCode) {
+      return res.status(500).json({ 
+        success: false,
+        message: "AI did not return valid code updates" 
+      });
+    }
 
     website.latestCode = updatedCode;
     if (!website.conversation) website.conversation = [];
@@ -142,57 +204,91 @@ OUTPUT FORMAT RULES:
     );
 
     await website.save();
-    return res.status(200).json({ message: "Website updated successfully", website });
+    
+    return res.status(200).json({ 
+      success: true,
+      message: "Website updated successfully", 
+      website 
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    console.error("❌ Update website error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: "Internal Server Error", 
+      error: error.message 
+    });
   }
 };
 
-// 3. GET WEBSITE BY ID
+// GET WEBSITE BY ID
 export const getWebsiteById = async (req, res) => {
   try {
     const website = await Website.findById(req.params.id);
-    if (!website) return res.status(404).json({ message: "Website not found" });
+    if (!website) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Website not found" 
+      });
+    }
     
-    // ✅ isDeployed फ्लैग सुनिश्चित करें
     const response = {
       ...website._doc,
       isDeployed: website.isDeployed || website.deployed || false
     };
     
-    return res.status(200).json(response);
+    return res.status(200).json({
+      success: true,
+      ...response
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Get Website Error", error: error.message });
+    console.error("❌ Get website error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: "Get Website Error", 
+      error: error.message 
+    });
   }
 };
 
-// 4. GET ALL WEBSITES
+// GET ALL WEBSITES
 export const getAll = async (req, res) => {
   try {
     const websites = await Website.find({ user: req.user._id }).sort({ createdAt: -1 });
     
-    // ✅ isDeployed फ्लैग सुनिश्चित करें
     const formattedWebsites = websites.map(site => ({
       ...site._doc,
       isDeployed: site.isDeployed || site.deployed || false
     }));
     
-    return res.status(200).json({ success: true, websites: formattedWebsites });
+    return res.status(200).json({ 
+      success: true, 
+      websites: formattedWebsites 
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Failed to fetch websites", error: error.message });
+    console.error("❌ Get all websites error:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch websites", 
+      error: error.message 
+    });
   }
 };
 
-// 5. DEPLOY WEBSITE ✅ (सिर्फ यहाँ बदलाव)
+// DEPLOY WEBSITE
 export const deploy = async (req, res) => {
   try {
     const { id } = req.params;
     const website = await Website.findById(id);
-    if (!website) return res.status(404).json({ message: "Not found" });
+    if (!website) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Website not found" 
+      });
+    }
 
-    // ✅ अगर पहले से डिप्लॉय है तो एरर दें
     if (website.isDeployed || website.deployed) {
       return res.status(400).json({ 
+        success: false,
         message: "Website already deployed!",
         url: website.deployUrl,
         isDeployed: true
@@ -203,7 +299,6 @@ export const deploy = async (req, res) => {
       website.slug = website.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 60) + website._id.toString().slice(-5);
     }
     
-    // ✅ डिप्लॉय फ्लैग्स सेट करें
     website.isDeployed = true;
     website.deployed = true;
     
@@ -212,29 +307,45 @@ export const deploy = async (req, res) => {
     await website.save();
 
     return res.status(200).json({ 
-      message: "Deployed!", 
+      success: true,
+      message: "Deployed successfully!", 
       url: website.deployUrl,
       isDeployed: true 
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("❌ Deploy error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };
 
-// 6. GET BY SLUG
+// GET BY SLUG
 export const getBySlug = async (req, res) => {
   try {
     const website = await Website.findOne({ slug: req.params.slug });
-    if (!website) return res.status(404).json({ message: "Not found" });
+    if (!website) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Website not found" 
+      });
+    }
     
-    // ✅ isDeployed फ्लैग सुनिश्चित करें
     const response = {
       ...website._doc,
       isDeployed: website.isDeployed || website.deployed || false
     };
     
-    return res.status(200).json(response);
+    return res.status(200).json({
+      success: true,
+      ...response
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("❌ Get by slug error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 };

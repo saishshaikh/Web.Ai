@@ -4,12 +4,21 @@ import {
   generateWebsite,
   updateWebsite,
   getWebsiteById,
-  getBySlug, // 🔥 फिक्स 1: LiveSite के लिए स्लग कंट्रोलर इम्पोर्ट किया
+  getBySlug,
   getAll,
   deploy,
 } from "../Controllers/website.controller.js"; 
 
 const websiteRouter = express.Router();
+
+// ✅ Debug Middleware - Har request ke liye log karein
+websiteRouter.use((req, res, next) => {
+  console.log(`📩 ${req.method} ${req.originalUrl} - Auth: ${req.user?._id || 'No user'}`);
+  console.log(`📦 Body:`, req.body);
+  console.log(`🔑 Cookies:`, req.cookies?.token ? '✅ Token present' : '❌ No token');
+  console.log(`🔑 Auth Header:`, req.headers.authorization ? '✅ Present' : '❌ Missing');
+  next();
+});
 
 // 1. AI Website Generation (Requires Auth)
 websiteRouter.post("/generate", isAuth, generateWebsite);
@@ -20,14 +29,13 @@ websiteRouter.put("/update/:id", isAuth, updateWebsite);
 // 3. Get All Websites for Logged-In User (Requires Auth)
 websiteRouter.get("/get-all", isAuth, getAll);
 
-// 4. 🔥 फिक्स 2: डिप्लॉयमेंट राउट को GET से POST किया और :id पैरामीटर जोड़ा 
-// (क्योंकि फ्रंटएंड axios.post से इसपर रिक्वेस्ट भेज रहा है)
+// 4. Deploy Route
 websiteRouter.post("/deploy/:id", isAuth, deploy);
 
-// 5. PUBLIC ROUTE: MongoDB ID से वेबसाइट का कोड फेच करने के लिए
+// 5. PUBLIC ROUTE: MongoDB ID se website fetch
 websiteRouter.get("/get-by-id/:id", getWebsiteById);
 
-// 6. 🔥 फिक्स 3: LiveSite.jsx के लिए यूनिक स्लग से वेबसाइट ढूंढने का पब्लिक राउट
+// 6. PUBLIC ROUTE: Slug se website fetch (LiveSite ke liye)
 websiteRouter.get("/get-by-slug/:slug", getBySlug);
 
 export default websiteRouter;
