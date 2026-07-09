@@ -6,10 +6,9 @@
 
 An AI-powered website generation platform built by **Saish Shaikh** using **MERN Stack and Large Language Models (LLMs)**. WebGenAI helps users create modern, responsive websites with the power of Generative AI.
 
-Generate smarter. Build faster. Create with AI. 🤖🌐 
+Generate smarter. Build faster. Create with AI. 🤖🌐
 
-
-
+---
 
 ## 🌐 Overview
 
@@ -19,48 +18,49 @@ The platform combines Artificial Intelligence with full-stack web development to
 
 ## ✨ Features
 
-* 🤖 **LLM-Powered Website Generation**
+* 🤖 **LLM-Powered Website Generation**  
   Uses Large Language Models to understand user requirements and generate intelligent web solutions.
 
-* 🌐 **AI Website Builder**
+* 🌐 **AI Website Builder**  
   Create modern and responsive websites with AI assistance.
 
-* ⚡ **MERN Stack Architecture**
+* ⚡ **MERN Stack Architecture**  
   Built using MongoDB, Express.js, React.js, and Node.js for a powerful full-stack experience.
 
-* 🎨 **Modern UI/UX Generation**
+* 🎨 **Modern UI/UX Generation**  
   Generate creative layouts and user-friendly designs.
 
-* 💡 **Smart Development Assistant**
+* 💡 **Smart Development Assistant**  
   Helps developers with ideas, improvements, and automated coding assistance.
 
-* 📱 **Responsive Web Applications**
+* 📱 **Responsive Web Applications**  
   Generates websites optimized for multiple devices.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-HTML5
-CSS3
-JavaScript
-React.js
-Tailwind CSS
-Motion / Animation Libraries
+
+- HTML5
+- CSS3
+- JavaScript
+- React.js
+- Tailwind CSS
+- Motion / Animation Libraries
 
 ### Backend
 
-* Node.js
-* Express.js
-* REST APIs
+- Node.js
+- Express.js
+- REST APIs
 
 ### Database
 
-* MongoDB
+- MongoDB
 
 ### Artificial Intelligence
 
-* Large Language Model (LLM) Integration
-* Generative AI APIs
+- Large Language Model (LLM) Integration
+- Generative AI APIs
 
 ## 🎯 Vision
 
@@ -88,19 +88,10 @@ If you like this project, consider giving it a ⭐ on GitHub and sharing it with
 
 **Built with ❤️ using MERN Stack + LLM Technology**
 
+## 📸 Screenshots
 
 <img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/8cf60f5b-192b-4016-9ad9-174f71dd450b" />
 
-
-
-
-
 <img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/87ac5150-d17d-4df4-b11e-9423af099acb" />
-
-
-
-
-
-
 
 <img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/b3c4b669-465b-4649-b645-f688c0f6177a" />
