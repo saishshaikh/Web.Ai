@@ -40,10 +40,12 @@ The platform combines Artificial Intelligence with full-stack web development to
 ## 🛠️ Tech Stack
 
 ### Frontend
-
-* React.js
-* Modern UI Components
-* Responsive Design
+HTML5
+CSS3
+JavaScript
+React.js
+Tailwind CSS
+Motion / Animation Libraries
 
 ### Backend
 
