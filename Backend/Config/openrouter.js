@@ -6,19 +6,23 @@ const generateResponse = async (prompt) => {
       throw new Error("OPENROUTER_API_KEY is missing in .env");
     }
 
+    console.log("🤖 Calling OpenRouter API...");
+    console.log("🔑 API Key present:", process.env.OPENROUTER_API_KEY ? "✅ Yes" : "❌ No");
+
     const response = await fetch(openrouterurl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": process.env.FRONTEND_URL || "https://web-ai-4.onrender.com",
+        "X-Title": "Web.Ai Website Builder"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "deepseek/deepseek-chat",  // ✅ Yeh model free hai
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert web development server. Return ONLY raw HTML code matching the user criteria. Do not talk, do not write markdown, do not wrap in backticks. Start with <!DOCTYPE html>.",
+            content: "You are an expert web development server. Return ONLY raw HTML code matching the user criteria. Do not talk, do not write markdown, do not wrap in backticks. Start with <!DOCTYPE html>.",
           },
           {
             role: "user",
@@ -32,19 +36,22 @@ const generateResponse = async (prompt) => {
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`OpenRouter error: ${errText}`);
+      console.error("❌ OpenRouter API Error:", response.status, errText);
+      throw new Error(`OpenRouter error: ${response.status} - ${errText}`);
     }
 
     const data = await response.json();
     const content = data?.choices?.[0]?.message?.content;
 
     if (!content) {
+      console.error("❌ Invalid API response:", data);
       throw new Error("Invalid OpenRouter response structure");
     }
 
+    console.log("✅ OpenRouter API response received");
     return content.trim();
   } catch (error) {
-    console.error("generateResponse ERROR:", error.message);
+    console.error("❌ generateResponse ERROR:", error.message);
     throw error;
   }
 };
