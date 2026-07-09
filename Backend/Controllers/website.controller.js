@@ -137,7 +137,6 @@ Start with:
 
 End with:
 </html>
-
 Include:
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -146,7 +145,7 @@ inside head.
 
 Put all JavaScript inside <script> before closing body.
 
-
+`;
 
 const cleanAiCode = (code) => {
   if (typeof code !== "string") return code;
